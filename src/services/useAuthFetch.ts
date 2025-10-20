@@ -1,0 +1,41 @@
+// hooks/useAuthFetch.ts
+'use client'
+
+import { getToken, saveToken } from './Token'
+import useAuth from '@/services/useAuth'
+
+type FetchInit = RequestInit & { _retry?: boolean }
+
+export default function useAuthFetch() {
+    const { refresh } = useAuth()
+
+    const authFetch = async (input: RequestInfo | URL, init?: FetchInit) => {
+        const makeHeaders = (token?: string | null, base?: HeadersInit) => {
+            const h = new Headers(base)
+            if (token) h.set('Authorization', `Bearer ${token}`)
+            return h
+        }
+
+        const doFetch = (token?: string | null, overrideInit?: FetchInit) =>
+            fetch(input, {
+                ...(overrideInit ?? init),
+                headers: makeHeaders(token, init?.headers),
+                credentials: init?.credentials ?? 'include',
+            })
+
+        let accessToken = getToken()
+        let res = await doFetch(accessToken)
+        if (res.status !== 401) return res
+        if (init?._retry) return res
+
+        const refreshData = await refresh()
+        const newToken = refreshData?.data?.accessToken
+        if (!newToken) return res
+
+        saveToken(newToken)
+        const retryInit: FetchInit = { ...(init || {}), _retry: true }
+        return doFetch(newToken, retryInit)
+    }
+
+    return { authFetch }
+}

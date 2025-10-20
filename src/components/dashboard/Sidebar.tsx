@@ -21,7 +21,7 @@ const NAV: Item[] = [
   { label: "Danh mục đầu tư",  href: "/dashboard/portfolio", icon: <Search className="size-5" /> },
   { label: "Quản lý tài chính",href: "/dashboard/wallet",    icon: <Wallet2 className="size-5" /> },
   { label: "Chatbot",          href: "/dashboard/chatbot",   icon: <Bot className="size-5" /> },
-  { label: "Báo chí",          href: "/dashboard/press",     icon: <Newspaper className="size-5" /> },
+  { label: "Báo chí",          href: "/dashboard/news",     icon: <Newspaper className="size-5" /> },
   { label: "Mạng xã hội",      href: "/dashboard/social",    icon: <Share2 className="size-5" /> },
   { label: "Đăng xuất",        href: "/dashboard/logout",    icon: <LogOut className="size-5" /> },
 ];
