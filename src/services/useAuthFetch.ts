@@ -23,8 +23,8 @@ export default function useAuthFetch() {
                 credentials: init?.credentials ?? 'include',
             })
 
-        let accessToken = getToken()
-        let res = await doFetch(accessToken)
+        const accessToken = getToken()
+        const res = await doFetch(accessToken)
         if (res.status !== 401) return res
         if (init?._retry) return res
 

@@ -39,7 +39,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      style={{ ["--sbw" as any]: `${WIDTH}px` }}
+      style={{ ["--sbw" as string]: `${WIDTH}px` }}
       className={[
         "sticky top-0 h-[100dvh] w-[var(--sbw)]",
         "bg-[#0B162C]/95 dark:bg-[#0A1226]/95 text-slate-200",

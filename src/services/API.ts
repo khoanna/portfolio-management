@@ -1,6 +1,6 @@
 interface APICallProps {
     method: "GET" | "POST" | "PATCH" | "DELETE";
-    body?: {};
+    body?: Record<string, unknown>;
     endpoint: string;
     sendWithCookie?: boolean;
     sendWithHeaderToken?: boolean;
