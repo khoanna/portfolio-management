@@ -1,5 +1,6 @@
 import { useState } from "react"
 import APICall from "./API"
+import { removeToken } from "./Token"
 
 const useAuth = () => {
   const [authLoading, setAuthLoading] = useState<boolean>(false)
@@ -64,8 +65,10 @@ const useAuth = () => {
       setAuthLoading(true)
       const data = await APICall({
         method: "POST",
-        endpoint: "/authen/logout"
+        endpoint: "/authen/logout",
+        sendWithCookie: true,
       })
+      removeToken();
       return data;
     } catch (error) {
       throw error;

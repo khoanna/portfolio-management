@@ -77,20 +77,7 @@ const AddTransaction = ({ isOpen, onClose, onSubmit, loading, assetId, assetName
             setFee(value);
         }
     };
-
-    const totalAmount = () => {
-        const priceVal = currentPrice || 0;
-        const quantityVal = parseFloat(quantity) || 0;
-        const feeVal = parseFloat(fee) || 0;
-        const expenseVal = parseFloat(expense) || 0;
-        
-        if (transactionType === 'Mua') {
-            return expenseVal + feeVal;
-        } else {
-            return expenseVal - feeVal;
-        }
-    };
-
+    
     const formatPrice = (value: number) => {
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
@@ -107,7 +94,7 @@ const AddTransaction = ({ isOpen, onClose, onSubmit, loading, assetId, assetName
                 {/* Close Button */}
                 <button
                     onClick={handleClose}
-                    className="absolute top-6 right-6 text-text/60 hover:text-text transition-colors z-10"
+                    className="absolute cursor-pointer top-6 right-6 text-text/60 hover:text-text transition-colors z-10"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

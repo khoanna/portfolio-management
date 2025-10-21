@@ -1,6 +1,7 @@
 // hooks/useAuthFetch.ts
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { getToken, saveToken } from './Token'
 import useAuth from '@/services/useAuth'
 
@@ -8,6 +9,7 @@ type FetchInit = RequestInit & { _retry?: boolean }
 
 export default function useAuthFetch() {
     const { refresh } = useAuth()
+    const router = useRouter()
 
     const authFetch = async (input: RequestInfo | URL, init?: FetchInit) => {
         const makeHeaders = (token?: string | null, base?: HeadersInit) => {
@@ -27,8 +29,14 @@ export default function useAuthFetch() {
         const res = await doFetch(accessToken)
         if (res.status !== 401) return res
         if (init?._retry) return res
+        
 
         const refreshData = await refresh()
+        if (!refreshData) {
+            router.push('/auth')
+            return res
+        }
+        
         const newToken = refreshData?.data?.accessToken
         if (!newToken) return res
 

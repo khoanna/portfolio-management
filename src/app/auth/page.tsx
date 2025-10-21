@@ -160,7 +160,7 @@ function SignIn({ setMode }: { setMode: (m: AuthMode) => void }) {
   const handleLogin = async () => {
     try {
       const data = await login({ email, password });
-      saveToken(data?.data?.access_token);
+      saveToken(data?.data?.token);
       setUser?.(data?.data?.infUser);
       setEmail("");
       setPassword("");

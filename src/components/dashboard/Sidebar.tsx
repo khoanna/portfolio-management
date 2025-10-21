@@ -10,9 +10,10 @@ import {
   Newspaper,
   Share2,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import useAuth from "@/services/useAuth";
 
 type Item = { label: string; href: string; icon: React.ReactNode };
 
@@ -23,19 +24,26 @@ const NAV: Item[] = [
   { label: "Chatbot",          href: "/dashboard/chatbot",   icon: <Bot className="size-5" /> },
   { label: "Báo chí",          href: "/dashboard/news",     icon: <Newspaper className="size-5" /> },
   { label: "Mạng xã hội",      href: "/dashboard/social",    icon: <Share2 className="size-5" /> },
-  { label: "Đăng xuất",        href: "/dashboard/logout",    icon: <LogOut className="size-5" /> },
+  { label: "Đăng xuất",        href: "",    icon: <LogOut className="size-5" /> },
 ];
 
 const WIDTH = 260;
 
 export default function Sidebar() {
   const activePath = usePathname();
-
+  const router = useRouter();
   // ---- next-themes: chỉ dùng sau khi mounted để tránh hydration mismatch
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const isDark = mounted && resolvedTheme === "dark";
+
+  const {logout} = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/auth");
+  }
 
   return (
     <aside
@@ -118,6 +126,7 @@ export default function Sidebar() {
               <li key={it.href}>
                 <Link
                   href={it.href}
+                  onClick={it.label === "Đăng xuất" ? handleLogout : undefined}
                   className={[
                     "group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors",
                     active
