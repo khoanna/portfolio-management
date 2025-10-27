@@ -81,12 +81,12 @@ export default function SocialPage() {
   ];
 
   return (
-    <div className="min-h-screen p-6 space-y-8 transition-colors">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 sm:space-y-8 transition-colors">
       {/* Post composer */}
-      <div className="bg-background rounded-xl shadow-sm border border-[var(--color-border)]/10 p-5">
+      <div className="bg-background rounded-xl shadow-sm border border-[var(--color-border)]/10 p-4 sm:p-5">
         <textarea
           placeholder="Viết gì đó..."
-          className="w-full bg-background p-3 rounded-lg border border-[var(--color-border)]/20 focus:ring-1 focus:ring-[#0066FF]/40 text-sm resize-none"
+          className="w-full bg-background p-3 rounded-lg border border-[var(--color-border)]/20 focus:ring-1 focus:ring-[#0066FF]/40 text-xs sm:text-sm resize-none"
           rows={3}
         />
         <div className="flex flex-wrap gap-2 mt-3">
@@ -104,7 +104,7 @@ export default function SocialPage() {
           ))}
         </div>
         <div className="flex justify-end mt-3">
-          <button className="flex items-center gap-2 bg-[#0066FF] text-white px-4 py-2 rounded-lg hover:bg-[#3385ff] active:scale-95 transition">
+          <button className="flex items-center gap-2 bg-[#0066FF] text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-[#3385ff] active:scale-95 transition text-xs sm:text-sm">
             <Send className="w-4 h-4" /> Đăng bài
           </button>
         </div>
@@ -114,29 +114,29 @@ export default function SocialPage() {
       {posts.map((post) => (
         <div
           key={post.id}
-          className="bg-background rounded-xl shadow-sm border border-[var(--color-border)]/10 p-5 space-y-4"
+          className="bg-background rounded-xl shadow-sm border border-[var(--color-border)]/10 p-4 sm:p-5 space-y-4"
         >
           {/* Header */}
           <div className="flex items-center gap-3">
             <img
               src={post.avatar}
               alt={post.author}
-              width={48}
-              height={48}
-              className="rounded-full"
+              width={40}
+              height={40}
+              className="rounded-full w-10 h-10 sm:w-12 sm:h-12"
             />
             <div>
-              <div className="font-semibold">{post.author}</div>
-              <div className="text-sm ">{post.username}</div>
+              <div className="font-semibold text-sm sm:text-base">{post.author}</div>
+              <div className="text-xs sm:text-sm">{post.username}</div>
             </div>
           </div>
 
           {/* Content */}
-          <p className="text-sm leading-relaxed">{post.content}</p>
+          <p className="text-xs sm:text-sm leading-relaxed">{post.content}</p>
 
           {/* Chart */}
           {post.chart && (
-            <div className="mt-3">
+            <div className="mt-3 overflow-x-auto">
               <Chart
                 options={chartOptions}
                 series={chartSeries}
@@ -149,16 +149,16 @@ export default function SocialPage() {
           {/* Table */}
           {post.table && (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-t border-[var(--color-border)]/10 mt-2">
+              <table className="w-full text-xs sm:text-sm text-left border-t border-[var(--color-border)]/10 mt-2">
                 <thead>
                   <tr>
-                    <th className="py-2">Name</th>
-                    <th className="py-2">Giá mua</th>
-                    <th className="py-2">Giá hiện tại</th>
-                    <th className="py-2">Tổng cộng</th>
-                    <th className="py-2">7D</th>
-                    <th className="py-2">30D</th>
-                    <th className="py-2">1Y</th>
+                    <th className="py-2 whitespace-nowrap">Name</th>
+                    <th className="py-2 whitespace-nowrap">Giá mua</th>
+                    <th className="py-2 whitespace-nowrap">Giá hiện tại</th>
+                    <th className="py-2 whitespace-nowrap">Tổng cộng</th>
+                    <th className="py-2 whitespace-nowrap">7D</th>
+                    <th className="py-2 whitespace-nowrap">30D</th>
+                    <th className="py-2 whitespace-nowrap">1Y</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -167,13 +167,13 @@ export default function SocialPage() {
                       key={i}
                       className="border-t border-[var(--color-border)]/10 hover:bg-background/50 transition"
                     >
-                      <td className="py-2">{coin}</td>
-                      <td>20B</td>
-                      <td>$6,777</td>
-                      <td>0.0000038</td>
-                      <td className="text-green-500">+1.1%</td>
-                      <td className="text-red-500">-2.4%</td>
-                      <td className="text-green-500">+7.7%</td>
+                      <td className="py-2 whitespace-nowrap">{coin}</td>
+                      <td className="whitespace-nowrap">20B</td>
+                      <td className="whitespace-nowrap">$6,777</td>
+                      <td className="whitespace-nowrap">0.0000038</td>
+                      <td className="text-green-500 whitespace-nowrap">+1.1%</td>
+                      <td className="text-red-500 whitespace-nowrap">-2.4%</td>
+                      <td className="text-green-500 whitespace-nowrap">+7.7%</td>
                     </tr>
                   ))}
                 </tbody>
@@ -183,25 +183,25 @@ export default function SocialPage() {
 
           {/* Reactions */}
           <div className="flex items-center justify-between pt-2 border-t border-[var(--color-border)]/10">
-            <span className="text-sm">
+            <span className="text-xs sm:text-sm">
               {post.likes.toLocaleString()} Likes
             </span>
-            <div className="flex gap-4">
-              <Heart className="w-5 h-5 cursor-pointer hover:scale-110 hover:text-red-500 transition" />
-              <MessageCircle className="w-5 h-5 cursor-pointer hover:scale-110 transition" />
+            <div className="flex gap-3 sm:gap-4">
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:scale-110 hover:text-red-500 transition" />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer hover:scale-110 transition" />
             </div>
           </div>
 
           {/* Comments */}
           <div className="space-y-3 pt-2">
             {post.comments.map((c) => (
-              <div key={c.id} className="flex items-start gap-2 text-sm">
+              <div key={c.id} className="flex items-start gap-2 text-xs sm:text-sm">
                 <img
                   src="https://i.pravatar.cc/100?img=12"
                   alt={c.author}
                   width={28}
                   height={28}
-                  className="rounded-full"
+                  className="rounded-full w-7 h-7 sm:w-7 sm:h-7"
                 />
                 <div className="bg-background px-3 py-2 rounded-xl shadow-sm">
                   <span className="font-medium">{c.author}: </span>
@@ -212,11 +212,11 @@ export default function SocialPage() {
 
             {/* Input comment */}
             <div className="flex items-center gap-2 mt-2">
-              <Smile className=" w-5 h-5" />
+              <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="text"
                 placeholder="Thêm bình luận..."
-                className="flex-1 bg-background border border-[var(--color-border)]/20 rounded-full px-4 py-2 text-sm focus:ring-2 focus:ring-[#0066FF]/40 outline-none"
+                className="flex-1 bg-background border border-[var(--color-border)]/20 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm focus:ring-2 focus:ring-[#0066FF]/40 outline-none"
               />
             </div>
           </div>

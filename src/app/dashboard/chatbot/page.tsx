@@ -48,11 +48,11 @@ export default function ChatBoxPage() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] bg-background rounded-xl border border-[var(--color-border)]/10 shadow-sm overflow-hidden">
+        <div className="flex flex-col h-[calc(100vh-6rem)] sm:h-[calc(100vh-4rem)] bg-background rounded-xl border border-[var(--color-border)]/10 shadow-sm overflow-hidden">
             {/* Header */}
-            <div className="px-6 py-4 border-b border-[var(--color-border)]/10 flex items-center justify-between">
-                <h2 className="text-lg font-semibold ">Chatbot Walleto</h2>
-                <button className="px-3 py-1 bg-foreground hover:brightness-110 active:scale-95 rounded-md text-sm font-medium cursor-pointer transition">
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-[var(--color-border)]/10 flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-semibold">Chatbot Walleto</h2>
+                <button className="px-3 py-1 bg-foreground hover:brightness-110 active:scale-95 rounded-md text-xs sm:text-sm font-medium cursor-pointer transition">
                     Hội thoại đã lưu
                 </button>
             </div>
@@ -60,7 +60,7 @@ export default function ChatBoxPage() {
             {/* Chat messages */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto nice-scroll px-6 py-4 space-y-4"
+                className="flex-1 overflow-y-auto nice-scroll px-4 sm:px-6 py-3 sm:py-4 space-y-3 sm:space-y-4"
             >
                 {messages.map((msg) => (
                     <div
@@ -70,7 +70,7 @@ export default function ChatBoxPage() {
                     >
 
                         <div
-                            className={`max-w-[70%] px-4 py-3 bg-foreground rounded-2xl shadow-sm text-sm leading-relaxed transition-all ${msg.sender === "user"
+                            className={`max-w-[85%] sm:max-w-[70%] px-3 sm:px-4 py-2 sm:py-3 bg-foreground rounded-2xl shadow-sm text-xs sm:text-sm leading-relaxed transition-all ${msg.sender === "user"
                                     ? " rounded-br-none"
                                     : "  rounded-bl-none"
                                 }`}
@@ -82,20 +82,20 @@ export default function ChatBoxPage() {
             </div>
 
             {/* Input box */}
-            <div className="p-4 border-t border-[var(--color-border)]/10 flex items-center gap-3 bg-background">
+            <div className="p-3 sm:p-4 border-t border-[var(--color-border)]/10 flex items-center gap-2 sm:gap-3 bg-background">
                 <input
                     type="text"
                     placeholder="Hỏi gì đó..."
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    className="flex-1 px-4 py-2 rounded-full bg-background text-sm focus:outline-none border border-[var(--color-border)]/10 focus:ring-1 focus:ring-[#0066FF]/40"
+                    className="flex-1 px-3 sm:px-4 py-2 rounded-full bg-background text-xs sm:text-sm focus:outline-none border border-[var(--color-border)]/10 focus:ring-1 focus:ring-[#0066FF]/40"
                 />
                 <button
                     onClick={handleSend}
                     className="bg-[#0066FF] hover:bg-[#3385ff] p-2 rounded-full cursor-pointer transition-transform active:scale-95 shadow-md"
                 >
-                    <Send className="w-5 h-5" />
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
             </div>
         </div>

@@ -9,6 +9,8 @@ import {
   Bot,
   Newspaper,
   Share2,
+  Menu,
+  X,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -32,6 +34,7 @@ const WIDTH = 260;
 export default function Sidebar() {
   const activePath = usePathname();
   const router = useRouter();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // ---- next-themes: chỉ dùng sau khi mounted để tránh hydration mismatch
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -45,59 +48,90 @@ export default function Sidebar() {
     router.push("/auth");
   }
 
-  return (
-    <aside
-      style={{ ["--sbw" as string]: `${WIDTH}px` }}
-      className={[
-        "sticky top-0 h-[100dvh] w-[var(--sbw)]",
-        "bg-[#0B162C]/95 dark:bg-[#0A1226]/95 text-slate-200",
-        "backdrop-blur-md border-r border-white/10 rounded-r-3xl",
-        "shadow-[inset_-1px_0_0_rgba(255,255,255,0.06),0_16px_40px_rgba(0,0,0,0.35)]",
-        "px-3 pt-5 pb-6",
-      ].join(" ")}
-      aria-label="Sidebar"
-    >
-      {/* Brand + Theme switch */}
-      <div className="flex text-2xl mb-8 items-center justify-center gap-4">
-        <div className="font-semibold tracking-wide">Walleto</div>
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-        {/* Switch chỉ render sau khi mounted để không lệch SSR/CSR */}
-        {mounted ? (
-          <button
-            onClick={() => setTheme(isDark ? "light" : "dark")}
-            role="switch"
-            aria-checked={isDark}
-            aria-label="Toggle theme"
-            className={[
-              "group relative h-6 w-14 rounded-full cursor-pointer",
-              "ring-1 ring-white/15",
-              "bg-gradient-to-br from-white/10 via-white/5 to-white/10",
-              "dark:from-blue-500/25 dark:via-blue-400/20 dark:to-blue-500/25",
-              "before:absolute before:inset-0 before:rounded-full before:blur-md",
-              "before:bg-white/10 dark:before:bg-blue-500/20",
-              "overflow-hidden backdrop-blur-sm",
-              "transition-[background,box-shadow] duration-300",
-              "hover:ring-white/25 hover:shadow-[0_10px_30px_rgba(0,0,0,0.28)]",
-              "active:scale-[0.98]",
-            ].join(" ")}
-          >
-            <span
+  return (
+    <>
+      {/* Mobile Menu Button - Fixed at top */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-xl bg-[#0B162C]/95 dark:bg-[#0A1226]/95 
+                   backdrop-blur-md border border-white/10 shadow-lg text-slate-200"
+        aria-label="Toggle menu"
+      >
+        {isMobileMenuOpen ? <X className="size-6" /> : <Menu className="size-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          onClick={closeMobileMenu}
+          className="lg:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        style={{ ["--sbw" as string]: `${WIDTH}px` }}
+        className={[
+          // Base styles
+          "h-[100dvh] w-[var(--sbw)]",
+          "bg-[#0B162C]/95 dark:bg-[#0A1226]/95 text-slate-200",
+          "backdrop-blur-md border-r border-white/10",
+          "shadow-[inset_-1px_0_0_rgba(255,255,255,0.06),0_16px_40px_rgba(0,0,0,0.35)]",
+          "px-3 pt-5 pb-6 overflow-y-auto",
+          // Mobile: fixed with slide animation
+          "lg:sticky lg:top-0",
+          "fixed top-0 z-40",
+          "transition-transform duration-300 ease-in-out",
+          isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          // Mobile: rounded corners
+          "rounded-r-3xl",
+        ].join(" ")}
+        aria-label="Sidebar"
+      >
+        {/* Brand + Theme switch */}
+        <div className="flex text-xl sm:text-2xl mb-6 sm:mb-8 items-center justify-center gap-3 sm:gap-4 pt-12 lg:pt-0">
+          <div className="font-semibold tracking-wide">Walleto</div>
+
+          {/* Switch chỉ render sau khi mounted để không lệch SSR/CSR */}
+          {mounted ? (
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              role="switch"
+              aria-checked={isDark}
+              aria-label="Toggle theme"
               className={[
-                "pointer-events-none absolute -inset-x-10 inset-y-0",
-                "bg-[linear-gradient(100deg,transparent,rgba(255,255,255,0.12),transparent)]",
-                "translate-x-[-60%] group-hover:translate-x-[60%]",
-                "transition-transform duration-700 ease-out",
+                "group relative h-6 w-12 sm:w-14 rounded-full cursor-pointer",
+                "ring-1 ring-white/15",
+                "bg-gradient-to-br from-white/10 via-white/5 to-white/10",
+                "dark:from-blue-500/25 dark:via-blue-400/20 dark:to-blue-500/25",
+                "before:absolute before:inset-0 before:rounded-full before:blur-md",
+                "before:bg-white/10 dark:before:bg-blue-500/20",
+                "overflow-hidden backdrop-blur-sm",
+                "transition-[background,box-shadow] duration-300",
+                "hover:ring-white/25 hover:shadow-[0_10px_30px_rgba(0,0,0,0.28)]",
+                "active:scale-[0.98]",
               ].join(" ")}
-            />
-            <span
-              className={[
-                "absolute top-1/2 -translate-y-1/2 h-5 w-5 rounded-full",
-                "grid place-items-center bg-white/95",
-                "shadow-[0_6px_18px_rgba(0,0,0,0.25)] ring-1 ring-white/60",
-                "transition-transform duration-300 group-active:scale-95",
-                isDark ? "translate-x-8" : "translate-x-1",
-                "before:absolute before:inset-[-1px] before:rounded-full before:content-['']",
-                "before:bg-[conic-gradient(from_220deg_at_50%_50%,rgba(255,255,255,0.65),rgba(255,255,255,0)_60%)]",
+            >
+              <span
+                className={[
+                  "pointer-events-none absolute -inset-x-10 inset-y-0",
+                  "bg-[linear-gradient(100deg,transparent,rgba(255,255,255,0.12),transparent)]",
+                  "translate-x-[-60%] group-hover:translate-x-[60%]",
+                  "transition-transform duration-700 ease-out",
+                ].join(" ")}
+              />
+              <span
+                className={[
+                  "absolute top-1/2 -translate-y-1/2 h-5 w-5 rounded-full",
+                  "grid place-items-center bg-white/95",
+                  "shadow-[0_6px_18px_rgba(0,0,0,0.25)] ring-1 ring-white/60",
+                  "transition-transform duration-300 group-active:scale-95",
+                  isDark ? "translate-x-7 sm:translate-x-8" : "translate-x-1",
+                  "before:absolute before:inset-[-1px] before:rounded-full before:content-['']",
+                  "before:bg-[conic-gradient(from_220deg_at_50%_50%,rgba(255,255,255,0.65),rgba(255,255,255,0)_60%)]",
               ].join(" ")}
             >
               {isDark ? (
@@ -113,7 +147,7 @@ export default function Sidebar() {
           </button>
         ) : (
           // skeleton nhỏ để SSR/CSR trùng nhau
-          <div className="h-6 w-14 rounded-full bg-white/10 ring-1 ring-white/10" />
+          <div className="h-6 w-12 sm:w-14 rounded-full bg-white/10 ring-1 ring-white/10" />
         )}
       </div>
 
@@ -126,7 +160,13 @@ export default function Sidebar() {
               <li key={it.href}>
                 <Link
                   href={it.href}
-                  onClick={it.label === "Đăng xuất" ? handleLogout : undefined}
+                  onClick={(e) => {
+                    if (it.label === "Đăng xuất") {
+                      e.preventDefault();
+                      handleLogout();
+                    }
+                    closeMobileMenu();
+                  }}
                   className={[
                     "group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors",
                     active
@@ -166,5 +206,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

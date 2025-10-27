@@ -18,32 +18,34 @@ export default function AuthPage() {
     mode === "signUp" || mode === "forgot" || mode === "reset";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-foreground transition-colors duration-500">
-      <div className="flex w-[90%] max-w-5xl h-[620px] rounded-2xl overflow-hidden shadow-2xl bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1628] via-[#0F1F3A] to-[#050F24] p-4 transition-colors duration-500">
+      <div className="flex flex-col lg:flex-row w-full max-w-6xl min-h-[620px] rounded-3xl overflow-hidden shadow-2xl bg-white">
+        {/* Left Panel - Logo & Info */}
         <div
-          className={`flex flex-col items-center justify-center w-1/2 px-8 py-6 transition-all duration-500 ${isLeftDark ? "bg-[#050F24] text-white" : "bg-white text-[#050F24]"
-            }`}
+          className={`flex flex-col items-center justify-center w-full lg:w-1/2 px-6 sm:px-8 py-8 lg:py-6 transition-all duration-500 ${
+            isLeftDark ? "bg-[#050F24] text-white" : "bg-white text-[#050F24]"
+          }`}
         >
           <Image
             src="/logo.png"
             alt="Logo"
-            width={70}
-            height={70}
-            className={`mb-6 ${isLeftDark ? "" : "invert"}`}
+            width={80}
+            height={80}
+            className={`mb-4 sm:mb-6 ${isLeftDark ? "" : "invert"}`}
           />
-          <h1 className="text-2xl font-bold mb-3">WALLETO</h1>
-          <p className="text-sm text-center opacity-80 leading-relaxed">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-3">WALLETO</h1>
+          <p className="text-sm sm:text-base text-center opacity-80 leading-relaxed max-w-xs">
             Giải pháp tài chính cá nhân
             <br />
             Quản lý tài chính và crypto hiệu quả hơn
           </p>
 
           {mode === "signIn" && (
-            <div className="mt-10 text-sm text-center">
+            <div className="mt-6 sm:mt-10 text-sm sm:text-base text-center">
               Người mới?{" "}
               <button
                 onClick={() => setMode("signUp")}
-                className="cursor-pointer text-blue-500 hover:underline"
+                className="cursor-pointer text-blue-500 hover:underline font-semibold"
               >
                 Đăng ký ngay
               </button>
@@ -51,11 +53,11 @@ export default function AuthPage() {
           )}
 
           {mode === "signUp" && (
-            <div className="mt-10 text-sm text-center">
+            <div className="mt-6 sm:mt-10 text-sm sm:text-base text-center">
               Đã có tài khoản?{" "}
               <button
                 onClick={() => setMode("signIn")}
-                className="cursor-pointer text-blue-400 hover:underline"
+                className="cursor-pointer text-blue-400 hover:underline font-semibold"
               >
                 Đăng nhập ngay
               </button>
@@ -65,16 +67,18 @@ export default function AuthPage() {
           {(mode === "forgot" || mode === "reset") && (
             <button
               onClick={() => setMode("signIn")}
-              className="cursor-pointer mt-10 px-5 py-2 border border-white/40 rounded-full text-sm hover:bg-white/10 transition"
+              className="cursor-pointer mt-6 sm:mt-10 px-6 py-2.5 border border-white/40 rounded-full text-sm sm:text-base hover:bg-white/10 transition-all duration-300 hover:scale-105"
             >
               ← Quay lại
             </button>
           )}
         </div>
 
+        {/* Right Panel - Forms */}
         <div
-          className={`flex flex-col items-center justify-center w-1/2 px-10 transition-all duration-500 ${isLeftDark ? "bg-white text-[#050F24]" : "bg-[#050F24] text-white"
-            }`}
+          className={`flex flex-col items-center justify-center w-full lg:w-1/2 px-6 sm:px-10 py-8 lg:py-6 transition-all duration-500 ${
+            isLeftDark ? "bg-white text-[#050F24]" : "bg-[#050F24] text-white"
+          }`}
         >
           {mode === "signIn" && <SignIn setMode={setMode} />}
 
@@ -106,23 +110,25 @@ const Input = ({
     placeholder={placeholder}
     value={value}
     onChange={e => onChange(e.target.value)}
-    className="w-full px-4 py-3 mb-4 text-sm rounded-xl
-      bg-white/10 text-zinc-500
+    className="w-full px-4 py-3 sm:py-3.5 mb-3 sm:mb-4 text-sm sm:text-base rounded-xl
+      bg-white/10 text-[#94a3b8] placeholder:text-[#94a3b8]/60
       border border-black/50 focus:border-blue-400
-      focus:outline-none focus:ring-0 focus:ring-blue-400/40
-      transition-all duration-300"
+      focus:outline-none focus:ring-2 focus:ring-blue-400/40
+      transition-all duration-300 hover:border-blue-300"
   />
 );
 
 const Button = ({ label, onClick, loading }: { label: string; onClick: () => void; loading: boolean }) => (
   <button
     onClick={onClick}
-    className="cursor-pointer w-full py-2.5 mt-2 bg-gradient-to-r from-[#081A32] to-[#0B2142] text-white font-semibold rounded-xl 
-    shadow-md hover:shadow-lg hover:brightness-110 transition duration-300"
+    disabled={loading}
+    className="cursor-pointer w-full py-3 sm:py-3.5 mt-2 sm:mt-3 bg-gradient-to-r from-[#081A32] to-[#0B2142] text-white font-semibold rounded-xl 
+    shadow-md hover:shadow-xl hover:brightness-110 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed
+    active:scale-95 text-sm sm:text-base"
   >
     {loading ?
       (
-        <Loader2 className="animate-spin mx-auto" />
+        <Loader2 className="animate-spin mx-auto" size={20} />
       ) : label}
   </button>
 );

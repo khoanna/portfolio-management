@@ -18,9 +18,9 @@ const Portfolio = () => {
     }
 
     return (
-        <div className="w-full min-h-screen flex flex-col p-6 gap-6 overflow-hidden">
+        <div className="w-full min-h-screen flex flex-col p-4 sm:p-6 gap-4 sm:gap-6 overflow-hidden">
             {/* Crypto Table Section - 50% */}
-            <div className='h-[500px] flex-shrink-0 overflow-hidden'>
+            <div className='h-[400px] sm:h-[500px] flex-shrink-0 overflow-hidden'>
                 <CryptoTable />
             </div>
 

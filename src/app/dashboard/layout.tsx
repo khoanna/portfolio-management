@@ -5,9 +5,9 @@ import RequireAuth from "@/components/RequireAuth";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   
   return (
-    <div className="grid min-h-screen grid-cols-[260px_1fr] bg-foreground text-text">
+    <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[260px_1fr] bg-foreground text-text">
       <Sidebar />
-      <main className="min-h-[100dvh] overflow-y-auto p-6">
+      <main className="min-h-[100dvh] overflow-y-auto p-4 sm:p-6">
         <RequireAuth>
           {children}
         </RequireAuth>
