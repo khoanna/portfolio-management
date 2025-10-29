@@ -82,3 +82,7 @@ body.nice-scroll::-webkit-scrollbar-thumb:hover {
 .nice-scroll::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(148,163,184,.55), rgba(71,85,105,.75));
 }
+
+button:hover {
+    cursor: pointer;
+}
