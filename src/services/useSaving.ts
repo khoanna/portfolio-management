@@ -138,5 +138,5 @@ export default function useSaving() {
         getListSavingTransactions,
         createSavingTransaction,
         deleteSavingTransaction,
-    };
-};
+    }
+}

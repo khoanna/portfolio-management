@@ -56,6 +56,18 @@ export default function AddEditSavingModal({
       return;
     }
 
+    // Validate target date is not in the past
+    if (formData.targetDate) {
+      const selectedDate = new Date(formData.targetDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Reset time to compare only dates
+      
+      if (selectedDate < today) {
+        alert("Ngày mục tiêu không thể ở trong quá khứ");
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await onSubmit({
@@ -141,21 +153,9 @@ export default function AddEditSavingModal({
               type="date"
               value={formData.targetDate}
               onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
+              min={new Date().toISOString().split('T')[0]}
               className="w-full px-4 py-2.5 rounded-lg bg-foreground border border-[var(--color-border)]/20 
                        focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
-            />
-          </div>
-
-          {/* Image URL */}
-          <div>
-            <label className="block text-sm font-medium mb-2">URL hình ảnh (tùy chọn)</label>
-            <input
-              type="url"
-              value={formData.urlImage}
-              onChange={(e) => setFormData({ ...formData, urlImage: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg bg-foreground border border-[var(--color-border)]/20 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
-              placeholder="https://example.com/image.jpg"
             />
           </div>
 

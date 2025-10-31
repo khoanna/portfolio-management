@@ -113,19 +113,6 @@ export default function AddEditBudgetModal({
             />
           </div>
 
-          {/* Image URL */}
-          <div>
-            <label className="block text-sm font-medium mb-2">URL hình ảnh (tùy chọn)</label>
-            <input
-              type="url"
-              value={formData.urlImage}
-              onChange={(e) => setFormData({ ...formData, urlImage: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg bg-foreground border border-[var(--color-border)]/20 
-                       focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all"
-              placeholder="https://example.com/image.jpg"
-            />
-          </div>
-
           {/* Actions */}
           <div className="flex gap-3 pt-4">
             <button

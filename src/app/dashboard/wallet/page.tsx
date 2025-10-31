@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, Edit2, Trash2, Plus } from "lucide-react";
+import { Loader2, Edit2, Trash2, Plus, History } from "lucide-react";
+import type { ApexOptions } from 'apexcharts';
 import useTransaction from "@/services/useTransaction";
 import useSaving from "@/services/useSaving";
 import useBudget from "@/services/useBudget";
@@ -13,12 +14,15 @@ import { Budget } from "@/type/useBudget";
 import { TransactionFormData } from "@/type/TransactionForm";
 import { BudgetFormData } from "@/type/BudgetForm";
 import { SavingFormData } from "@/type/SavingForm";
+import { SavingTransaction } from "@/type/SavingTransaction";
 import AddEditTransactionModal from "@/components/wallet/AddEditTransactionModal";
 import AddEditBudgetModal from "@/components/wallet/AddEditBudgetModal";
 import AddEditSavingModal from "@/components/wallet/AddEditSavingModal";
 import DeleteConfirmModal from "@/components/wallet/DeleteConfirmModal";
+import AddSavingTransactionModal from "@/components/wallet/AddSavingTransactionModal";
+import SavingTransactionHistoryModal from "@/components/wallet/SavingTransactionHistoryModal";
 
-const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
+const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const FinanceDashboard: React.FC = () => {
   const context = useUserContext();
@@ -32,7 +36,10 @@ const FinanceDashboard: React.FC = () => {
   const {
     getListSaving,
     createSaving,
-    deleteSaving
+    deleteSaving,
+    getListSavingTransactions,
+    createSavingTransaction,
+    deleteSavingTransaction
   } = useSaving();
 
   const {
@@ -54,6 +61,18 @@ const FinanceDashboard: React.FC = () => {
   const [savingModal, setSavingModal] = useState({ isOpen: false, mode: "add" as "add" | "edit", data: null as Saving | null });
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, type: "", id: "", name: "" });
   const [deleteLoading, setDeleteLoading] = useState(false);
+  
+  // Saving transaction states
+  const [savingTransactionModal, setSavingTransactionModal] = useState({ 
+    isOpen: false, 
+    saving: null as Saving | null 
+  });
+  const [savingHistoryModal, setSavingHistoryModal] = useState({ 
+    isOpen: false, 
+    saving: null as Saving | null,
+    transactions: [] as SavingTransaction[]
+  });
+  const [savingTransactionsLoading, setSavingTransactionsLoading] = useState(false);
 
   // Fetch all data
   const fetchAllData = async () => {
@@ -152,15 +171,92 @@ const FinanceDashboard: React.FC = () => {
     }
   };
 
-  // Chart setup
-  const pieOptions = {
-    labels: chartData.map(item => item.transactionCategory),
-    colors: ["#F59E0B", "#2EC4B6", "#9C27B0", "#EF4444", "#10B981", "#3B82F6"],
-    legend: { position: "bottom" as const },
-    dataLabels: { enabled: true },
+  // Saving transaction handlers
+  const handleOpenSavingHistory = async (saving: Saving) => {
+    setSavingTransactionsLoading(true);
+    setSavingHistoryModal({ isOpen: true, saving, transactions: [] });
+    
+    try {
+      const response = await getListSavingTransactions(saving.idSaving);
+      setSavingHistoryModal(prev => ({
+        ...prev,
+        transactions: response?.data || []
+      }));
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setSavingTransactionsLoading(false);
+    }
   };
 
-  const pieSeries = chartData.map(item => item.expensePercent);
+  const handleAddSavingTransaction = async (data: { amount: number }) => {
+    if (!savingTransactionModal.saving) return;
+    
+    try {
+      await createSavingTransaction({
+        idSaving: savingTransactionModal.saving.idSaving,
+        amount: data.amount
+      });
+      
+      // Refresh data
+      await fetchAllData();
+      
+      // Close add modal and reopen history to show updated list
+      setSavingTransactionModal({ isOpen: false, saving: null });
+      await handleOpenSavingHistory(savingTransactionModal.saving);
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteSavingTransaction = async (idSavingDetail: string) => {
+    try {
+      await deleteSavingTransaction(idSavingDetail);
+      
+      // Refresh both main data and transaction history
+      await fetchAllData();
+      
+      if (savingHistoryModal.saving) {
+        const response = await getListSavingTransactions(savingHistoryModal.saving.idSaving);
+        setSavingHistoryModal(prev => ({
+          ...prev,
+          transactions: response?.data || []
+        }));
+      }
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+      throw error;
+    }
+  };
+
+  // Chart setup - styled like dashboard DonutChart
+  const chartOptions: ApexOptions = useMemo(() => ({
+    chart: {
+      type: 'donut',
+      toolbar: { show: false },
+      foreColor: '#94a3b8',
+    },
+    colors: ['#f59e0b', '#2ec4b6', '#9c27b0', '#ef4444', '#10b981', '#3b82f6'],
+    labels: chartData.map(item => item.transactionCategory),
+    stroke: { width: 0 },
+    dataLabels: { enabled: false },
+    legend: {
+      position: 'bottom',
+      fontSize: '12px',
+      markers: { size: 10, offsetX: 0, offsetY: 0 },
+      itemMargin: { horizontal: 10, vertical: 4 },
+    },
+    tooltip: {
+      y: { formatter: (val: number) => `${val}%` },
+    },
+    grid: { padding: { top: 0, bottom: 0, left: 0, right: 0 } },
+    responsive: [
+      { breakpoint: 480, options: { chart: { height: 240 }, legend: { fontSize: '11px' } } },
+    ],
+  }), [chartData]);
+
+  const chartSeries = chartData.map(item => item.expensePercent);
 
   if (loading) {
     return (
@@ -190,68 +286,89 @@ const FinanceDashboard: React.FC = () => {
         {/* Main grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {/* Transaction table */}
-          <div className="lg:col-span-6 rounded-xl bg-background shadow-sm border border-[var(--color-border)]/10 p-4 sm:p-5 transition-all hover:shadow-md">
-            <h2 className="text-base sm:text-lg font-semibold mb-3">Lịch sử tiêu tiền</h2>
+          <div className="lg:col-span-7 rounded-2xl bg-background shadow-xl p-4 sm:p-6 transition-all">
+            <h2 className="text-sm font-bold opacity-80 mb-4">Lịch sử tiêu tiền</h2>
             {transactionList.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs sm:text-sm">
-                  <thead>
-                    <tr className="text-[var(--color-text)] border-b border-[var(--color-border)]/10">
-                      <th className="text-left pb-2 whitespace-nowrap">Tên giao dịch</th>
-                      <th className="text-left pb-2 whitespace-nowrap">Loại</th>
-                      <th className="text-left pb-2 whitespace-nowrap">Số tiền</th>
-                      <th className="text-left pb-2 whitespace-nowrap">Ngày</th>
-                      <th className="text-center pb-2 whitespace-nowrap">Hành động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactionList.slice(0, 10).map((t) => (
-                      <tr
-                        key={t.idTransaction}
-                        className="border-b border-[var(--color-border)]/5 hover:bg-[var(--foreground)]/50 transition"
-                      >
-                        <td className="py-2">{t.transactionName}</td>
-                        <td>
-                          <span className={`px-2 py-1 rounded-full text-xs ${t.transactionType === "Chi"
-                              ? "bg-red-500/10 text-red-500"
-                              : "bg-green-500/10 text-green-500"
-                            }`}>
-                            {t.transactionType}
-                          </span>
-                        </td>
-                        <td className="text-right font-medium whitespace-nowrap">
-                          {t.amount.toLocaleString()}đ
-                        </td>
-                        <td className="whitespace-nowrap">
-                          {new Date(t.transactionDate).toLocaleDateString('vi-VN')}
-                        </td>
-                        <td>
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => setTransactionModal({ isOpen: true, mode: "edit", data: t })}
-                              className="p-1.5 hover:bg-blue-500/10 rounded-lg transition-colors"
-                              title="Sửa"
-                            >
-                              <Edit2 className="w-4 h-4 text-blue-500" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteModal({
-                                isOpen: true,
-                                type: "transaction",
-                                id: t.idTransaction,
-                                name: t.transactionName
-                              })}
-                              className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
-                              title="Xóa"
-                            >
-                              <Trash2 className="w-4 h-4 text-red-500" />
-                            </button>
-                          </div>
-                        </td>
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="text-[var(--color-text)] border-b border-[var(--color-border)]/20">
+                        <th className="text-left pb-3 px-4 sm:px-2 font-medium text-xs sm:text-sm">Tên giao dịch</th>
+                        <th className="text-center pb-3 px-2 font-medium text-xs sm:text-sm hidden sm:table-cell">Loại</th>
+                        <th className="text-right pb-3 px-4 sm:px-2 font-medium text-xs sm:text-sm">Số tiền</th>
+                        <th className="text-center pb-3 px-2 font-medium text-xs sm:text-sm hidden md:table-cell">Ngày</th>
+                        <th className="text-center pb-3 px-4 sm:px-2 font-medium text-xs sm:text-sm">Hành động</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {transactionList.slice(0, 10).map((t) => (
+                        <tr
+                          key={t.idTransaction}
+                          className="border-b border-[var(--color-border)]/5 hover:bg-foreground/50 transition-colors"
+                        >
+                          <td className="py-3 px-4 sm:px-2">
+                            <div className="flex flex-col gap-1">
+                              <span className="font-medium text-sm">{t.transactionName}</span>
+                              <div className="flex items-center gap-2 sm:hidden">
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                                  t.transactionType === "Chi"
+                                    ? "bg-red-500/10 text-red-500"
+                                    : "bg-green-500/10 text-green-500"
+                                }`}>
+                                  {t.transactionType}
+                                </span>
+                                <span className="text-xs text-[var(--color-text)] md:hidden">
+                                  {new Date(t.transactionDate).toLocaleDateString('vi-VN')}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-2 text-center hidden sm:table-cell">
+                            <span className={`px-2.5 py-1 rounded-full text-xs font-medium inline-block ${
+                              t.transactionType === "Chi"
+                                ? "bg-red-500/10 text-red-500"
+                                : "bg-green-500/10 text-green-500"
+                            }`}>
+                              {t.transactionType}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 sm:px-2 text-right">
+                            <span className="font-semibold text-sm whitespace-nowrap">
+                              {t.amount.toLocaleString()}đ
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-center text-sm text-[var(--color-text)] hidden md:table-cell">
+                            {new Date(t.transactionDate).toLocaleDateString('vi-VN')}
+                          </td>
+                          <td className="py-3 px-4 sm:px-2">
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => setTransactionModal({ isOpen: true, mode: "edit", data: t })}
+                                className="p-1.5 hover:bg-blue-500/10 rounded-lg transition-colors"
+                                title="Sửa"
+                              >
+                                <Edit2 className="w-4 h-4 text-blue-500" />
+                              </button>
+                              <button
+                                onClick={() => setDeleteModal({
+                                  isOpen: true,
+                                  type: "transaction",
+                                  id: t.idTransaction,
+                                  name: t.transactionName
+                                })}
+                                className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
+                                title="Xóa"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-500" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
               <div className="text-center py-12 text-[var(--color-text)]">
@@ -267,21 +384,23 @@ const FinanceDashboard: React.FC = () => {
           </div>
 
           {/* Chart + Budget */}
-          <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Pie Chart */}
-            <div className="rounded-xl bg-background shadow-sm border border-[var(--color-border)]/10 p-4 sm:p-5 flex flex-col items-center justify-center hover:shadow-md transition">
-              <h2 className="text-base sm:text-lg font-semibold mb-3">Tỉ lệ chi tiêu</h2>
+          <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
+            {/* Donut Chart - styled like dashboard */}
+            <div className="rounded-2xl shadow-xl bg-background p-4 min-h-[340px]">
+              <div className="text-sm font-bold opacity-80 mb-2">Tỉ lệ chi tiêu</div>
               {chartData.length > 0 ? (
-                <Chart options={pieOptions} series={pieSeries} type="pie" width="260" />
+                <ReactApexChart options={chartOptions} series={chartSeries} type="donut" height={260} />
               ) : (
-                <p className="text-sm text-[var(--color-text)]">Chưa có dữ liệu</p>
+                <div className="flex items-center justify-center h-[260px]">
+                  <p className="text-sm text-[var(--color-text)]">Chưa có dữ liệu</p>
+                </div>
               )}
             </div>
 
             {/* Budget List */}
-            <div className="rounded-xl bg-background shadow-sm border border-[var(--color-border)]/10 p-4 sm:p-5 hover:shadow-md transition">
+            <div className="rounded-2xl bg-background shadow-xl p-4 sm:p-5 transition-all">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-base sm:text-lg font-semibold">Ngân sách</h2>
+                <h2 className="text-sm font-bold opacity-80">Ngân sách</h2>
                 <button
                   onClick={() => setBudgetModal({ isOpen: true, mode: "add", data: null })}
                   className="p-1.5 hover:bg-blue-500/10 rounded-lg transition-colors"
@@ -292,12 +411,12 @@ const FinanceDashboard: React.FC = () => {
               </div>
 
               {budgetList.length > 0 ? (
-                <div className="space-y-4 max-h-[300px] overflow-y-auto nice-scroll">
+                <div className="space-y-4 max-h-[200px] overflow-y-auto nice-scroll pr-1">
                   {budgetList.map((b) => {
                     const percent = Math.min(100, Math.round((b.currentBudget / b.budgetGoal) * 100));
                     return (
                       <div key={b.idBudget} className="group">
-                        <div className="flex justify-between mb-1">
+                        <div className="flex justify-between mb-1.5">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">{b.budgetName}</span>
                             <div className="opacity-0 group-hover:opacity-100 flex gap-1 transition-opacity">
@@ -314,18 +433,19 @@ const FinanceDashboard: React.FC = () => {
                               </button>
                             </div>
                           </div>
-                          <span className="font-semibold text-sm whitespace-nowrap">
+                          <span className="font-semibold text-sm whitespace-nowrap ml-2">
                             {b.currentBudget.toLocaleString()}đ
                           </span>
                         </div>
-                        <div className="w-full bg-gray-200/30 rounded-full h-2">
+                        <div className="w-full bg-gray-200/30 rounded-full h-2.5">
                           <div
-                            className={`h-2 rounded-full transition-all ${percent >= 90 ? 'bg-red-500' : percent >= 70 ? 'bg-yellow-500' : 'bg-green-500'
-                              }`}
+                            className={`h-2.5 rounded-full transition-all ${
+                              percent >= 90 ? 'bg-red-500' : percent >= 70 ? 'bg-yellow-500' : 'bg-green-500'
+                            }`}
                             style={{ width: `${percent}%` }}
                           />
                         </div>
-                        <p className="text-xs text-[var(--color-text)] mt-1">
+                        <p className="text-xs text-[var(--color-text)] mt-1.5">
                           {percent}% của {b.budgetGoal.toLocaleString()}đ
                         </p>
                       </div>
@@ -373,6 +493,20 @@ const FinanceDashboard: React.FC = () => {
                       <h3 className="font-semibold text-sm sm:text-base">{g.savingName}</h3>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
+                          onClick={() => handleOpenSavingHistory(g)}
+                          className="p-1.5 hover:bg-blue-500/10 rounded-lg transition-colors"
+                          title="Lịch sử"
+                        >
+                          <History className="w-4 h-4 text-blue-500" />
+                        </button>
+                        <button
+                          onClick={() => setSavingTransactionModal({ isOpen: true, saving: g })}
+                          className="p-1.5 hover:bg-green-500/10 rounded-lg transition-colors"
+                          title="Thêm tiền"
+                        >
+                          <Plus className="w-4 h-4 text-green-500" />
+                        </button>
+                        <button
                           onClick={() => setDeleteModal({
                             isOpen: true,
                             type: "saving",
@@ -380,6 +514,7 @@ const FinanceDashboard: React.FC = () => {
                             name: g.savingName
                           })}
                           className="p-1.5 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Xóa"
                         >
                           <Trash2 className="w-4 h-4 text-red-500" />
                         </button>
@@ -407,7 +542,7 @@ const FinanceDashboard: React.FC = () => {
                     </div>
 
                     {g.description && (
-                      <p className="text-xs text-gray-500 italic break-words">
+                      <p className="text-xs text-gray-500 italic break-words truncate line-clamp-2">
                         {g.description}
                       </p>
                     )}
@@ -470,6 +605,34 @@ const FinanceDashboard: React.FC = () => {
         message={`Bạn có chắc chắn muốn xóa "${deleteModal.name}"? Hành động này không thể hoàn tác.`}
         loading={deleteLoading}
       />
+
+      {/* Saving Transaction Modals */}
+      {savingTransactionModal.saving && (
+        <AddSavingTransactionModal
+          isOpen={savingTransactionModal.isOpen}
+          onClose={() => setSavingTransactionModal({ isOpen: false, saving: null })}
+          onSubmit={handleAddSavingTransaction}
+          savingName={savingTransactionModal.saving.savingName}
+          currentAmount={savingTransactionModal.saving.currentAmount}
+          targetAmount={savingTransactionModal.saving.targetAmount}
+        />
+      )}
+
+      {savingHistoryModal.saving && (
+        <SavingTransactionHistoryModal
+          isOpen={savingHistoryModal.isOpen}
+          onClose={() => setSavingHistoryModal({ isOpen: false, saving: null, transactions: [] })}
+          savingName={savingHistoryModal.saving.savingName}
+          savingId={savingHistoryModal.saving.idSaving}
+          transactions={savingHistoryModal.transactions}
+          onDelete={handleDeleteSavingTransaction}
+          onAddNew={() => {
+            setSavingHistoryModal(prev => ({ ...prev, isOpen: false }));
+            setSavingTransactionModal({ isOpen: true, saving: savingHistoryModal.saving });
+          }}
+          loading={savingTransactionsLoading}
+        />
+      )}
     </>
   );
 };
